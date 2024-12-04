@@ -3,14 +3,6 @@ import cv2
 import math as m
 import mediapipe as mp
 from flask import Flask, Response
-import time
-import os
-
-import absl.logging
-absl.logging.set_verbosity(absl.logging.ERROR)
-
-# Disable mediapipe logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 #from posture_detection import findDistance, findAngle
 
@@ -55,8 +47,8 @@ device = 0 # on linux might need "/dev/video0"
 cap = cv2.VideoCapture(device)
 cap.open(device)
 
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+#cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+#cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 #cap.set(cv2.CAP_PROP_FPS, 30)
 #cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
 
@@ -90,9 +82,6 @@ def gather_img():
     while True:
         #time.sleep(0.01)
         success, image = cap.read()
-        if not CAMERA_ACTIVE:
-            print("Camera was active. Resetting the loop.")
-            break
         if not success:
             print("Null.Frames")
             #break
@@ -136,9 +125,9 @@ def gather_img():
             # Assist to align the camera to point at the side view of the person.
             # Offset threshold 30 is based on results obtained from analysis over 100 samples.
             if offset < 100:
-                cv2.putText(image, str(int(offset)) + ' Aligned', (w - 250, 30), font, 0.9, green, 2)
+                cv2.putText(image, str(int(offset)) + ' Aligned', (w - 150, 30), font, 0.9, green, 2)
             else:
-                cv2.putText(image, str(int(offset)) + ' Not Aligned', (w - 250, 30), font, 0.9, red, 2)
+                cv2.putText(image, str(int(offset)) + ' Not Aligned', (w - 150, 30), font, 0.9, red, 2)
 
             # Calculate angles.
             neck_inclination = findAngle(l_shldr_x, l_shldr_y, l_ear_x, l_ear_y)
@@ -211,17 +200,13 @@ def gather_img():
             _, jpeg = cv2.imencode('.jpg', image)
             yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
         except Exception:
+            print("error")
             _, jpeg = cv2.imencode('.jpg', image)
             yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
 
 @app.route("/mjpeg")
 def mjpeg():
-    global CAMERA_ACTIVE
-    CAMERA_ACTIVE = False
-    time.sleep(1)
-    CAMERA_ACTIVE = True
-    
     return Response(gather_img(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-app.run(host='0.0.0.0', port=5000)
+app.run(debug=True, host='0.0.0.0', port=5000, threaded=1)

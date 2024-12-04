@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <!-- Include socketio Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: Arial, sans-serif;
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    .heart-rate, .steps {
+      font-size: 2.5rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .heart-rate {
+      color: #ff6f61;
+    }
+    .steps {
+      color: #007bff;
+    }
+    .activity-status {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .timer-display {
+      font-size: 3rem;
+      font-weight: bold;
+      text-align: center;
+      color: #007bff;
+      width: 150px;
+      height: 150px;
+      border: 4px solid black;
+      border-radius: 50%;
+      line-height: 150px;
+      margin: 20px auto;
+    }
+    .chart-container {
+      margin-top: 20px;
+    }
+    .wellnessguard-text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: black;
+      z-index: 1000; 
+    }
+    .menu-logo {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1001;
+    }
+    .header-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-container">
+    <!-- Menu Logo -->
+    <div class="menu-logo">
+      <button class="btn btn-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <img src="3588249.png" alt="Menu" style="width: 30px; height: 30px;">
+      </button>
+      <ul class="dropdown-menu dropdown-menu-start">
+        <li><a class="dropdown-item" href="#timer-section">Timer</a></li>
+        <li><a class="dropdown-item" href="#heart-rate-section">Heart Rate</a></li>
+        <li><a class="dropdown-item" href="#activity-status-section">Activity Status</a></li>
+        <li><a class="dropdown-item" href="#steps-section">Steps</a></li>
+        <li><a class="dropdown-item" href="#chart-section">Heart Rate History</a></li>
+        <li><a class="dropdown-item" href="#camera-feed-section">Live Camera Feed</a></li>
+      </ul>
+    </div>
+    <div class="wellnessguard-text">WellnessGuard</div>
+  </div>
+
+  <!-- Timer Section -->
+  <div id="timer-section" class="row mb-4">
+    <div class="col-md-12">
+      <div class="card text-center">
+        <h2>Move Reminder Timer</h2>
+        <div class="timer-display" id="timer-display">00:00</div>
+        <div>
+          <label for="timer-input" class="form-label">Set Timer (minutes):</label>
+          <input type="number" id="timer-input" class="form-control" placeholder="Enter minutes">
+        </div>
+        <div class="mt-3 d-flex justify-content-around">
+          <button class="btn btn-success" id="start-timer">Start</button>
+          <button class="btn btn-warning" id="pause-timer">Pause</button>
+          <button class="btn btn-danger" id="reset-timer">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heart Rate Section -->
+  <div id="heart-rate-section" class="row mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <h2 class="text-center">Heart Rate</h2>
+        <p class="heart-rate" id="heart-rate">-- bpm</p>
+      </div>
+    </div>
+    <div id="activity-status-section" class="col-md-6">
+      <div class="card">
+        <h2 class="text-center">Activity Status</h2>
+        <p class="activity-status" id="activity-status">Inactive</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steps and Heart Rate Line Chart Section -->
+  <div id="steps-section" class="row mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <h2 class="text-center">Steps</h2>
+        <p class="steps" id="steps">--</p>
+      </div>
+    </div>
+    <div id="chart-section" class="col-md-6">
+      <div class="card">
+        <h2 class="text-center">Heart Rate History</h2>
+        <div class="chart-container">
+          <canvas id="heartRateChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MJPEG Stream Section -->
+  <div id="camera-feed-section" class="row mb-4">
+    <div class="col-md-12">
+      <div class="card text-center">
+        <h2>Live Camera Feed</h2>
+        <div style="width: 800px; height: 800px; margin: auto;">
+          <img src="http://localhost:5000/mjpeg" style="width: 100%; height: 100%;" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Include external JavaScript file -->
+  <script src="script.js"></script>
+  <!-- Include Bootstrap JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

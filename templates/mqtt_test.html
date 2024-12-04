@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Messages</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>MQTT Messages</h1>
+    <ul id="messages">
+        <!-- Messages will appear here -->
+    </ul>
+
+    <script>
+        // Connect to the Socket.IO server
+        const socket = io();
+
+        // Listen for 'mqtt_message' events
+        socket.on('mqtt_message', (data) => {
+            const messages = document.getElementById('messages');
+            const messageItem = document.createElement('li');
+            messageItem.textContent = `Topic: ${data.topic}, Payload: ${data.payload}`;
+            messages.appendChild(messageItem);
+        });
+    </script>
+</body>
+</html>
