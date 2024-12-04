@@ -1,0 +1,734 @@
+[
+    {
+        "id": "71ede3128a34a807",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "49c8c9ff062dabfd",
+        "type": "ui_button",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "group": "cec9b0754d994504",
+        "order": 3,
+        "width": "12",
+        "height": "1",
+        "passthru": false,
+        "label": "Start",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "timer-button",
+        "icon": "",
+        "payload": "timer",
+        "payloadType": "flow",
+        "topic": "payload",
+        "topicType": "msg",
+        "x": 230,
+        "y": 220,
+        "wires": [
+            [
+                "c976684e0cb0769d"
+            ]
+        ]
+    },
+    {
+        "id": "58a7e876cc50b230",
+        "type": "ui_button",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "group": "cec9b0754d994504",
+        "order": 5,
+        "width": 12,
+        "height": 1,
+        "passthru": false,
+        "label": "Reset",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "timer-button",
+        "icon": "",
+        "payload": "0",
+        "payloadType": "num",
+        "topic": "payload",
+        "topicType": "msg",
+        "x": 230,
+        "y": 280,
+        "wires": [
+            [
+                "c976684e0cb0769d"
+            ]
+        ]
+    },
+    {
+        "id": "c976684e0cb0769d",
+        "type": "function",
+        "z": "71ede3128a34a807",
+        "name": "Timer Logic",
+        "func": "let totalSeconds = msg.payload;\n\n\n\nif (totalSeconds === \"pause\") {\n    context.set('isActive', false); // Deactivate the countdown\n    return null; // Exit immediately\n}\n\n// Retrieve the countdown active flag from context\nlet isActive = context.get('isActive') || false;\n\n// Check if the payload is 0 and stop the countdown\nif (totalSeconds === 0) {\n    context.set('isActive', false); // Deactivate the countdown\n    msg.payload = \"00:00\"; // Update msg.payload with the current time step\n    node.send(msg);\n    return null;\n\n// Return the message object to send it forward\nreturn msg;\n    return null; // Exit immediately\n}\n\n// Define the getNextTimeStep function\nfunction getNextTimeStep(seconds) {\n    if (seconds > 0) {\n        const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');\n        const remainingSeconds = (seconds % 60).toString().padStart(2, '0');\n        return `${minutes}:${remainingSeconds}`; // Return time in MM:SS format\n    } else {\n        return \"00:00\"; // Return final time if seconds reach 0\n    }\n}\n\n// Countdown function\nfunction countdown(seconds) {\n    if (seconds >= 0 && context.get('isActive')) { // Continue only if countdown is active\n        msg.payload = getNextTimeStep(seconds); // Update msg.payload with the current time step\n        node.send(msg); // Send the updated message\n\n        // Schedule the next iteration after 1 second\n        setTimeout(() => {\n            countdown(seconds - 1);\n        }, 1000);\n    } else {\n        // Clear the active flag if countdown ends\n        context.set('isActive', false);\n    }\n}\n\n// Start the countdown only if no other countdown is active\nif (!isActive) {\n    context.set('isActive', true); // Set the active flag\n    countdown(totalSeconds);\n}\n\nreturn null; // Ensure the function does not return prematurely",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 280,
+        "wires": [
+            [
+                "9601a31349a53b3b"
+            ]
+        ]
+    },
+    {
+        "id": "3c9b89286ec8e43f",
+        "type": "change",
+        "z": "71ede3128a34a807",
+        "name": "Store timer value",
+        "rules": [
+            {
+                "t": "set",
+                "p": "timer",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 850,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a1f043315d0de762",
+        "type": "ui_button",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "group": "cec9b0754d994504",
+        "order": 4,
+        "width": 12,
+        "height": 1,
+        "passthru": false,
+        "label": "Pause",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "timer-button",
+        "icon": "",
+        "payload": "pause",
+        "payloadType": "str",
+        "topic": "payload",
+        "topicType": "msg",
+        "x": 230,
+        "y": 340,
+        "wires": [
+            [
+                "c976684e0cb0769d",
+                "2c47e33225706d00"
+            ]
+        ]
+    },
+    {
+        "id": "9601a31349a53b3b",
+        "type": "ui_template",
+        "z": "71ede3128a34a807",
+        "group": "cec9b0754d994504",
+        "name": "Timer",
+        "order": 1,
+        "width": "36",
+        "height": "5",
+        "format": "<style>\n    body {\n        background-color: #f4f6f9;\n        font-family: Arial, sans-serif;\n        overflow: hidden; /* Hide scrollbars */\n    }\n\n\n    .dashboard-container {\n        max-width: 1200px;\n        margin: auto;\n        padding: 20px;\n    }\n\n    .card {\n        border-radius: 10px;\n        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);\n        padding: 20px;\n    }\n\n    .text-center {\n        text-align: center;\n    }\n\n    .heart-rate {\n        font-size: 2.5rem;\n        font-weight: bold;\n        color: #ff6f61;\n        text-align: center;\n    }\n\n    .activity-status {\n        font-size: 1.5rem;\n        font-weight: bold;\n        text-align: center;\n    }\n\n    .timer-display {\n        font-size: 3rem;\n        font-weight: bold;\n        text-align: center;\n        color: #007bff;\n        width: 150px;\n        height: 150px;\n        border: 4px solid black;\n        border-radius: 50%;\n        line-height: 150px;\n        margin: 20px auto;\n    }\n\n    .chart-container {\n        margin-top: 20px;\n    }\n\n    .wellnessguard-text {\n        position: absolute;\n        top: 10px;\n        left: 10px;\n        font-size: 1.5rem;\n        font-weight: bold;\n        color: black;\n        z-index: 1000;\n    }\n</style>\n\n<body scrolling=\"no\">\n    <div class=\"row mb-4\">\n        <div class=\"col-md-12\">\n            <div class=\"card text-center\">\n                <h2>Move Reminder Timer</h2>\n                <div class=\"timer-display\" id=\"timer-display\">00:00</div>\n            </div>\n        </div>\n    </div>\n</body>\n\n<script>\n    // Function to update the timer display\n    function updateTimer(payload) {\n        const timerDisplay = document.getElementById(\"timer-display\");\n        timerDisplay.textContent = payload; // Set the timer display to the payload value\n    }\n\n    // Example usage: Call this function whenever a message is received\n    // In a Node-RED WebSocket or external system integration, replace this with actual message handling logic\n    // Example: updateTimer('05:30'); // Updates timer to 5 minutes and 30 seconds\n</script>\n\n<script>\n    (function(scope) {\n        // Watch for incoming payload\n        scope.$watch('msg.payload', function(payload) {\n            if (payload) {\n                updateTimer(payload); // Update timer with the payload value\n            }\n        });\n    })(scope);\n</script>\n<script>\n    // Set up the notification message\nmsg.payload = {\n    title: \"Timer Notification\",   // Title of the notification\n    message: \"Time is up!\",        // Body of the notification                   // Duration to display (in seconds)\n};\n\n// Return the message object to send it forward\nreturn msg;\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "timer-container",
+        "x": 810,
+        "y": 280,
+        "wires": [
+            [
+                "2c47e33225706d00"
+            ]
+        ]
+    },
+    {
+        "id": "db0444b5aa5806fe",
+        "type": "function",
+        "z": "71ede3128a34a807",
+        "name": "Convert to seconds",
+        "func": "msg.payload *= 60;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 140,
+        "wires": [
+            [
+                "3c9b89286ec8e43f"
+            ]
+        ]
+    },
+    {
+        "id": "b8721d7a96caa511",
+        "type": "ui_text_input",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "label": "Enter minutes:",
+        "tooltip": "",
+        "group": "cec9b0754d994504",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "payload",
+        "sendOnBlur": true,
+        "className": "input-container",
+        "topicType": "msg",
+        "x": 260,
+        "y": 140,
+        "wires": [
+            [
+                "db0444b5aa5806fe"
+            ]
+        ]
+    },
+    {
+        "id": "a7d560f158207f36",
+        "type": "ui_template",
+        "z": "71ede3128a34a807",
+        "group": "cec9b0754d994504",
+        "name": "Video feed",
+        "order": 11,
+        "width": "36",
+        "height": "20",
+        "format": "<style>\n    img {\n        border: 2px solid #141111;\n        border-radius: 10px;\n        object-fit: fill;\n    }\n</style>\n\n<h1 style=\"text-align: center\">Posture detection</h1>\n\n<div style=\"width: 70%; height: 0; padding-bottom: 50.625%; position: relative; margin: auto;\"></div>\n<img src=\"http://localhost:5000/mjpeg\" style=\"position: absolute; top: 10%; left: 50%; transform: translateX(-50%); width: 70%; height: 70%;\" />\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "videofeed",
+        "x": 1030,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5cb488a8addc638d",
+        "type": "ui_chart",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "group": "cec9b0754d994504",
+        "order": 10,
+        "width": 18,
+        "height": 6,
+        "label": "Steps Through Out Today:",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "dashboard-container",
+        "x": 1210,
+        "y": 1000,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5eb1378859ebb102",
+        "type": "mqtt in",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "topic": "stepcounter/inactivity",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "5a4aa9d0779f0edf",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 280,
+        "y": 500,
+        "wires": [
+            [
+                "6ac425eac0933a5a"
+            ]
+        ]
+    },
+    {
+        "id": "6ac425eac0933a5a",
+        "type": "ui_text",
+        "z": "71ede3128a34a807",
+        "group": "cec9b0754d994504",
+        "order": 7,
+        "width": 18,
+        "height": 2,
+        "name": "",
+        "label": "Activity:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "dashboard-container",
+        "style": true,
+        "font": "",
+        "fontSize": "21",
+        "color": "#000000",
+        "x": 520,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "974538b0a8ab6102",
+        "type": "ui_text",
+        "z": "71ede3128a34a807",
+        "group": "cec9b0754d994504",
+        "order": 6,
+        "width": 18,
+        "height": 4,
+        "name": "",
+        "label": "BPM:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "dashboard-container",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 510,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "40e9ae934c536714",
+        "type": "mqtt in",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "topic": "pulsesensor/bpm",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "5a4aa9d0779f0edf",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 260,
+        "y": 580,
+        "wires": [
+            [
+                "974538b0a8ab6102"
+            ]
+        ]
+    },
+    {
+        "id": "513e44a5d2e9d9b9",
+        "type": "ui_chart",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "group": "cec9b0754d994504",
+        "order": 9,
+        "width": 18,
+        "height": 6,
+        "label": "Heart Rate Today:",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "dashboard-container",
+        "x": 1210,
+        "y": 840,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "af76bc97caba3fb1",
+        "type": "mqtt in",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "topic": "stepcounter/steps",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "5a4aa9d0779f0edf",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 270,
+        "y": 740,
+        "wires": [
+            [
+                "56712518646b5c36"
+            ]
+        ]
+    },
+    {
+        "id": "56712518646b5c36",
+        "type": "ui_text",
+        "z": "71ede3128a34a807",
+        "group": "cec9b0754d994504",
+        "order": 8,
+        "width": 18,
+        "height": 2,
+        "name": "",
+        "label": "Last activity step count:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "dashboard-container",
+        "style": true,
+        "font": "Arial,Arial,Helvetica,sans-serif",
+        "fontSize": "20",
+        "color": "#000000",
+        "x": 570,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "1d21d43fae4e1cae",
+        "type": "ui_toast",
+        "z": "71ede3128a34a807",
+        "position": "dialog",
+        "displayTime": "5",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 1,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "Time is up!",
+        "name": "Notification",
+        "x": 1170,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2c47e33225706d00",
+        "type": "function",
+        "z": "71ede3128a34a807",
+        "name": "function 1",
+        "func": "if (msg.payload == \"00:00\") {\n    msg.payload = \"Take a break!\"\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 280,
+        "wires": [
+            [
+                "1d21d43fae4e1cae"
+            ]
+        ]
+    },
+    {
+        "id": "9a83c9b047060349",
+        "type": "inject",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "SELECT * FROM steps",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 1000,
+        "wires": [
+            [
+                "83c708492640a31d"
+            ]
+        ]
+    },
+    {
+        "id": "5608ba5fbb01ded0",
+        "type": "sqlite",
+        "z": "71ede3128a34a807",
+        "mydb": "42c0d0940ab7e57e",
+        "sqlquery": "msg.topic",
+        "sql": "SELECT * from",
+        "name": "",
+        "x": 580,
+        "y": 840,
+        "wires": [
+            [
+                "d5f4e4a6ea89188a"
+            ]
+        ]
+    },
+    {
+        "id": "03321d26ae9986d2",
+        "type": "inject",
+        "z": "71ede3128a34a807",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "SELECT * FROM heartrate",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 840,
+        "wires": [
+            [
+                "5608ba5fbb01ded0"
+            ]
+        ]
+    },
+    {
+        "id": "d5f4e4a6ea89188a",
+        "type": "function",
+        "z": "71ede3128a34a807",
+        "name": "function 2",
+        "func": "msg.payload = [\n    {\n        series: [\"Heart Rate\"], // Dataset name\n        data: [\n            msg.payload.map(entry => ({\n                x: new Date(entry.timestamp).getTime(), // Convert timestamp to epoch (milliseconds)\n                y: entry.bpm // BPM value for the chart\n            }))\n        ],\n        labels: [] // Not needed for time-based charts\n    }\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 840,
+        "wires": [
+            [
+                "513e44a5d2e9d9b9"
+            ]
+        ]
+    },
+    {
+        "id": "83c708492640a31d",
+        "type": "sqlite",
+        "z": "71ede3128a34a807",
+        "mydb": "42c0d0940ab7e57e",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 580,
+        "y": 1000,
+        "wires": [
+            [
+                "61d9c82e79b2f5b9"
+            ]
+        ]
+    },
+    {
+        "id": "61d9c82e79b2f5b9",
+        "type": "function",
+        "z": "71ede3128a34a807",
+        "name": "function 3",
+        "func": "msg.payload = [\n    {\n        series: [\"Steps\"], // Dataset name\n        data: [\n            msg.payload.map(entry => ({\n                x: new Date(entry.timestamp).getTime(), // Convert timestamp to epoch (milliseconds)\n                y: entry.steps // BPM value for the chart\n            }))\n        ],\n        labels: [] // Not needed for time-based charts\n    }\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 1000,
+        "wires": [
+            [
+                "5cb488a8addc638d"
+            ]
+        ]
+    },
+    {
+        "id": "11b1bc5e8ba525c7",
+        "type": "ui_template",
+        "z": "71ede3128a34a807",
+        "group": "6f25747665db219b",
+        "name": "Presentation",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "format": "<iframe width=\"1177\" height=\"662\" src=\"https://www.youtube.com/embed/91H64J2fAoI\"\n    title=\"POSTURE / STEP / PULSE DETECTION\" frameborder=\"0\"\n    allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\"\n    referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1030,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "80ab594fd8660115",
+        "type": "ui_template",
+        "z": "71ede3128a34a807",
+        "group": "cec9b0754d994504",
+        "name": "Styling",
+        "order": 11,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n    .timer-button button {\n        border: solid 2px;\n        border-color: #000;\n        box-shadow: 5px 5px 15px;\n        border-radius: 10px;\n    }\n    .dashboard-container {\n        border: solid 1px;\n        border-color: #000;\n        box-shadow: 5px 5px 15px;\n        border-radius: 10px;\n    }\n    .timer-container {\n        overflow:hidden;\n        border: solid 1px;\n        border-color: #000;\n        box-shadow: 5px 5px 15px;\n        border-radius: 10px;\n    }\n    .videofeed {\n        border: solid 1px;\n        border-color: #000;\n        box-shadow: 5px 5px 15px;\n        border-radius: 10px;\n    }\n    .input-container {\n        border: solid 1px;\n        border-color: #000;\n        box-shadow: 5px 5px 15px;\n        border-radius: 10px;\n        display: flex;\n        justify-content: center;\n        align-items: center;\n    }\n\n    .input-container input {\n        font-size: 20px;\n        font-weight: bold;\n        text-align: center;\n        width: 100%;\n        border: none;\n        outline: none;\n    }\n    .input-container label {\n        font-size: 24px;\n        font-weight: bold;\n        border: none;\n        outline: none;\n        margin-top: 10px;\n    }\n\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1010,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cec9b0754d994504",
+        "type": "ui_group",
+        "name": "Move Reminder Timer",
+        "tab": "027f39c496036a6e",
+        "order": 1,
+        "disp": false,
+        "width": "36",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "5a4aa9d0779f0edf",
+        "type": "mqtt-broker",
+        "name": "MQTTInput",
+        "broker": "mqtt://ubuntu-2.local",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "3",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "42c0d0940ab7e57e",
+        "type": "sqlitedb",
+        "db": "/home/team1/Posture-Detection/Project_WellnessGuard/mytopic.db",
+        "mode": "RO"
+    },
+    {
+        "id": "6f25747665db219b",
+        "type": "ui_group",
+        "name": "Our presentation",
+        "tab": "fb2f09300666d829",
+        "order": 1,
+        "disp": true,
+        "width": "20",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "027f39c496036a6e",
+        "type": "ui_tab",
+        "name": "WellnessGuard Dashboard",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "fb2f09300666d829",
+        "type": "ui_tab",
+        "name": "Presentation",
+        "icon": "dashboard",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    }
+]
